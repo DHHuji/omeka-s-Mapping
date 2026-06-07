@@ -107,3 +107,7 @@
 .mapping-control-group-select select {
   display: block;
 }
+
+.mapping-marker-highlight {
+  filter: hue-rotate(155deg) saturate(1.9) brightness(0.95);
+}

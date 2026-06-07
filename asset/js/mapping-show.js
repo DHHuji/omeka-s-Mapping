@@ -26,6 +26,13 @@ if (queryItemsQuery && highlightResourceId) {
     features.addLayer(highlightedFeaturesPoint).addLayer(highlightedFeaturesPoly);
 }
 
+const highlightedFeatures = function() {
+    if (!highlightedFeaturesPoint || !highlightedFeaturesPoly) {
+        return null;
+    }
+    return L.featureGroup([highlightedFeaturesPoint, highlightedFeaturesPoly]);
+};
+
 let defaultBounds = null;
 if (mappingData && mappingData['o-module-mapping:bounds'] !== null) {
     const bounds = mappingData['o-module-mapping:bounds'].split(',');
@@ -37,6 +44,11 @@ if (mappingData && mappingData['o-module-mapping:bounds'] !== null) {
 const setView = function() {
     if (defaultBounds) {
         map.fitBounds(defaultBounds);
+    } else if (queryItemsQuery && highlightResourceId) {
+        const bounds = highlightedFeatures().getBounds();
+        if (bounds.isValid()) {
+            map.fitBounds(bounds, {padding: [50, 50]});
+        }
     } else {
         const bounds = features.getBounds();
         if (bounds.isValid()) {
@@ -82,22 +94,13 @@ if (queryItemsQuery && highlightResourceId) {
         1,
         {
             pointToLayer: function(feature, latlng) {
-                return L.circleMarker(latlng, {
-                    radius: 8,
-                    color: '#b42318',
-                    weight: 2,
-                    fillColor: '#f04438',
-                    fillOpacity: 0.95,
+                return L.marker(latlng, {
+                    icon: new L.Icon.Default({
+                        className: 'mapping-marker-highlight',
+                    }),
                 });
             },
             styleOptions: {
-                pointStyle: {
-                    radius: 8,
-                    color: '#b42318',
-                    weight: 2,
-                    fillColor: '#f04438',
-                    fillOpacity: 0.95,
-                },
                 defaultPolyStyle: {
                     color: '#b42318',
                 },
