@@ -90,7 +90,8 @@ const MappingModule = {
         featuresQuery,
         onFeaturesLoad = () => null,
         featuresByResource = {},
-        featuresPage = 1
+        featuresPage = 1,
+        options = {}
     ) {
         // Observe a map interaction (done programmatically or by the user).
         if ('undefined' === typeof map.mapping_map_interaction) {
@@ -117,7 +118,10 @@ const MappingModule = {
                     const featureId = featureData[0];
                     const resourceId = featureData[1];
                     const featureGeography = featureData[2];
-                    L.geoJSON(featureGeography, {
+                    if (options.skipResourceIds && options.skipResourceIds.includes(resourceId)) {
+                        return;
+                    }
+                    const geoJsonOptions = {
                         onEachFeature: function(feature, layer) {
                             const popup = L.popup();
                             layer.bindPopup(popup);
@@ -128,13 +132,26 @@ const MappingModule = {
                                     });
                                 });
                             }
-                            MappingModule.addFeature(map, featuresPoint, featuresPoly, layer, feature.type);
+                            MappingModule.addFeature(
+                                map,
+                                featuresPoint,
+                                featuresPoly,
+                                layer,
+                                feature.type,
+                                options.styleOptions || {}
+                            );
                             if (!(resourceId in featuresByResource)) {
                                 featuresByResource[resourceId] = L.featureGroup();
                             }
                             featuresByResource[resourceId].addLayer(layer);
                         }
-                    });
+                    };
+                    if (options.pointToLayer) {
+                        geoJsonOptions.pointToLayer = function(feature, latlng) {
+                            return options.pointToLayer(feature, latlng, resourceId, featureId);
+                        };
+                    }
+                    L.geoJSON(featureGeography, geoJsonOptions);
                 });
                 // Load more features recursively.
                 MappingModule.loadFeaturesAsync(
@@ -147,7 +164,8 @@ const MappingModule = {
                     featuresQuery,
                     onFeaturesLoad,
                     featuresByResource,
-                    ++featuresPage
+                    ++featuresPage,
+                    options
                 );
             });
     },
@@ -160,23 +178,29 @@ const MappingModule = {
      * @param {L.layer} layer
      * @param {string} type
      */
-    addFeature: function(map, featuresPoint, featuresPoly, layer, type) {
+    addFeature: function(map, featuresPoint, featuresPoly, layer, type, styleOptions = {}) {
         switch (type) {
             case 'Point':
+                if (styleOptions.pointStyle && 'function' === typeof layer.setStyle) {
+                    layer.setStyle(styleOptions.pointStyle);
+                }
                 featuresPoint.addLayer(layer);
                 break;
             case 'LineString':
             case 'Polygon':
             case 'MultiPolygon':
+                const defaultStyle = styleOptions.defaultPolyStyle || {color: '#3388ff'};
+                const activeStyle = styleOptions.activePolyStyle || {color: '#9fc6fc'};
+                layer.setStyle(defaultStyle);
                 layer.on('popupopen', function() {
-                    layer.setStyle({color: '#9fc6fc'});
+                    layer.setStyle(activeStyle);
                     const layerBounds = layer.getBounds();
                     if (!map.getBounds().contains(layerBounds)) {
                         map.fitBounds(layerBounds);
                     }
                 });
                 layer.on('popupclose', function() {
-                    layer.setStyle({color: '#3388ff'});
+                    layer.setStyle(defaultStyle);
                 });
                 featuresPoly.addLayer(layer);
                 break;

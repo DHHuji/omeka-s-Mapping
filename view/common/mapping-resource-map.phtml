@@ -2,12 +2,16 @@
 $mapping = null;
 $disableClustering = null;
 $basemapProvider = null;
+$queryItemsQuery = null;
+$queryFeaturesQuery = null;
+$highlightResourceId = null;
 
 $hasMapping = false;
 $hasFeatures = false;
 switch (get_class($resource)) {
     case 'Omeka\Api\Representation\ItemRepresentation':
         $itemsQuery = ['id' => $resource->id()];
+        $highlightResourceId = $resource->id();
         $mappingResponse = $this->api()->searchOne('mappings', ['item_id' => $resource->id()]);
         $mapping = $mappingResponse->getContent();
         $hasMapping = $mappingResponse->getTotalResults();
@@ -30,6 +34,31 @@ if ($this->status()->isSiteRequest()) {
     $featurePopupContentUrl = $this->url('site/mapping', ['controller' => 'index', 'action' => 'get-feature-popup-content'], true);
     $disableClustering = $this->siteSetting('mapping_disable_clustering');
     $basemapProvider = $this->siteSetting('mapping_basemap_provider');
+    if (
+        $resource instanceof \Omeka\Api\Representation\ItemRepresentation
+        && $this->siteSetting('mapping_item_page_show_query_items')
+    ) {
+        $queryItemsQuery = [];
+        $queryFeaturesQuery = [
+            'address' => null,
+            'radius' => null,
+            'radius_unit' => null,
+        ];
+        $siteQuery = trim((string) $this->siteSetting('mapping_item_page_query'));
+        if ('' !== $siteQuery) {
+            parse_str(ltrim($siteQuery, '?'), $queryItemsQuery);
+            $queryFeaturesQuery = [
+                'address' => $queryItemsQuery['mapping_address'] ?? null,
+                'radius' => $queryItemsQuery['mapping_radius'] ?? null,
+                'radius_unit' => $queryItemsQuery['mapping_radius_unit'] ?? null,
+            ];
+            unset(
+                $queryItemsQuery['mapping_address'],
+                $queryItemsQuery['mapping_radius'],
+                $queryItemsQuery['mapping_radius_unit'],
+            );
+        }
+    }
 } else {
     $featuresUrl = $this->url('admin/mapping', ['controller' => 'index', 'action' => 'get-features']);
     $featurePopupContentUrl = $this->url('admin/mapping', ['controller' => 'index', 'action' => 'get-feature-popup-content']);
@@ -60,6 +89,9 @@ $this->headScript()->appendFile($this->assetUrl('js/control.fit-bounds.js', 'Map
         data-features-url="<?php echo $this->escapeHtml($featuresUrl); ?>"
         data-feature-popup-content-url="<?php echo $this->escapeHtml($featurePopupContentUrl); ?>"
         data-items-query="<?php echo $this->escapeHtml(json_encode($itemsQuery)); ?>"
+        data-query-items-query="<?php echo $this->escapeHtml(json_encode($queryItemsQuery)); ?>"
+        data-query-features-query="<?php echo $this->escapeHtml(json_encode($queryFeaturesQuery)); ?>"
+        data-highlight-resource-id="<?php echo $this->escapeHtml($highlightResourceId); ?>"
         data-features-query="[]">
     </div>
 </div>

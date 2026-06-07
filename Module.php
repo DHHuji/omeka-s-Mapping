@@ -819,6 +819,32 @@ class Module extends AbstractModule
             ],
         ]);
         $form->add([
+            'type' => 'checkbox',
+            'name' => 'mapping_item_page_show_query_items',
+            'options' => [
+                'element_group' => 'mapping',
+                'label' => 'Show additional item-page markers by query', // @translate
+                'info' => 'On item pages, render extra mapped items that match the configured query while keeping the current item highlighted separately.', // @translate
+            ],
+            'attributes' => [
+                'value' => $siteSettings->get('mapping_item_page_show_query_items'),
+            ],
+        ]);
+        $form->add([
+            'type' => 'textarea',
+            'name' => 'mapping_item_page_query',
+            'options' => [
+                'element_group' => 'mapping',
+                'label' => 'Item-page map query', // @translate
+                'info' => 'Paste the same kind of query string used for Map Browse or the Map by query block. It may begin with "?" or directly with query parameters. Leave blank to match all site items with mapping data.', // @translate
+            ],
+            'attributes' => [
+                'value' => $siteSettings->get('mapping_item_page_query'),
+                'rows' => 4,
+                'placeholder' => '?resource_class_id[]=33&has_media=1',
+            ],
+        ]);
+        $form->add([
             'type' => 'select',
             'name' => 'mapping_basemap_provider',
             'options' => [
@@ -838,6 +864,8 @@ class Module extends AbstractModule
     {
         $inputFilter = $event->getParam('inputFilter');
         $inputFilter->add(['name' => 'mapping_basemap_provider', 'allow_empty' => true]);
+        $inputFilter->add(['name' => 'mapping_item_page_show_query_items', 'allow_empty' => true]);
+        $inputFilter->add(['name' => 'mapping_item_page_query', 'allow_empty' => true]);
     }
 
     public function addMapTab(Event $event)

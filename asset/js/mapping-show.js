@@ -2,6 +2,7 @@ $(document).ready( function() {
 
 const mappingMap = $('#mapping-map');
 const mappingData = mappingMap.data('mapping');
+const queryFeaturesQuery = mappingMap.data('queryFeaturesQuery') || mappingMap.data('featuresQuery');
 
 const [
     map,
@@ -13,6 +14,17 @@ const [
     disableClustering: mappingMap.data('disable-clustering'),
     basemapProvider: mappingMap.data('basemap-provider')
 });
+
+const queryItemsQuery = mappingMap.data('queryItemsQuery');
+const highlightResourceId = mappingMap.data('highlightResourceId');
+
+let highlightedFeaturesPoint = null;
+let highlightedFeaturesPoly = null;
+if (queryItemsQuery && highlightResourceId) {
+    highlightedFeaturesPoint = L.featureGroup();
+    highlightedFeaturesPoly = L.featureGroup();
+    features.addLayer(highlightedFeaturesPoint).addLayer(highlightedFeaturesPoly);
+}
 
 let defaultBounds = null;
 if (mappingData && mappingData['o-module-mapping:bounds'] !== null) {
@@ -41,16 +53,72 @@ const onFeaturesLoad = function() {
     }
 };
 
-MappingModule.loadFeaturesAsync(
-    map,
-    featuresPoint,
-    featuresPoly,
-    mappingMap.data('featuresUrl'),
-    mappingMap.data('featurePopupContentUrl'),
-    JSON.stringify(mappingMap.data('itemsQuery')),
-    JSON.stringify(mappingMap.data('featuresQuery')),
-    onFeaturesLoad
-);
+if (queryItemsQuery && highlightResourceId) {
+    MappingModule.loadFeaturesAsync(
+        map,
+        featuresPoint,
+        featuresPoly,
+        mappingMap.data('featuresUrl'),
+        mappingMap.data('featurePopupContentUrl'),
+        JSON.stringify(queryItemsQuery),
+        JSON.stringify(queryFeaturesQuery),
+        onFeaturesLoad,
+        {},
+        1,
+        {
+            skipResourceIds: [highlightResourceId],
+        }
+    );
+    MappingModule.loadFeaturesAsync(
+        map,
+        highlightedFeaturesPoint,
+        highlightedFeaturesPoly,
+        mappingMap.data('featuresUrl'),
+        mappingMap.data('featurePopupContentUrl'),
+        JSON.stringify({id: highlightResourceId}),
+        JSON.stringify(mappingMap.data('featuresQuery')),
+        onFeaturesLoad,
+        {},
+        1,
+        {
+            pointToLayer: function(feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 8,
+                    color: '#b42318',
+                    weight: 2,
+                    fillColor: '#f04438',
+                    fillOpacity: 0.95,
+                });
+            },
+            styleOptions: {
+                pointStyle: {
+                    radius: 8,
+                    color: '#b42318',
+                    weight: 2,
+                    fillColor: '#f04438',
+                    fillOpacity: 0.95,
+                },
+                defaultPolyStyle: {
+                    color: '#b42318',
+                },
+                activePolyStyle: {
+                    color: '#f97066',
+                },
+            },
+        }
+    );
+} else {
+    MappingModule.loadFeaturesAsync(
+        map,
+        featuresPoint,
+        featuresPoly,
+        mappingMap.data('featuresUrl'),
+        mappingMap.data('featurePopupContentUrl'),
+        JSON.stringify(mappingMap.data('itemsQuery')),
+        JSON.stringify(mappingMap.data('featuresQuery')),
+        onFeaturesLoad
+    );
+}
 
 // Switching sections changes map dimensions, so make the necessary adjustments.
 $('#mapping-section').one('o:section-opened', function(e) {
