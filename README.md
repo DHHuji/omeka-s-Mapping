@@ -3,6 +3,14 @@
 Mapping is a module for Omeka S which allows you to geolocate Omeka S items and
 add interactive maps to your sites and pages.
 
+## Installation
+
+Install the module, then install its PHP dependencies from the module directory:
+
+```sh
+composer install --no-dev
+```
+
 - [Omeka S user manual](http://omeka.org/s/docs/user-manual/modules/mapping/)
 - [Omeka S developer documentation](https://omeka.org/s/docs/developer/module_docs/Mapping/)
 
