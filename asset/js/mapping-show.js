@@ -94,11 +94,14 @@ if (queryItemsQuery && highlightResourceId) {
         1,
         {
             pointToLayer: function(feature, latlng) {
-                return L.marker(latlng, {
-                    icon: new L.Icon.Default({
-                        className: 'mapping-marker-highlight',
-                    }),
+                const marker = L.marker(latlng);
+                marker.on('add', function() {
+                    const markerElement = marker.getElement();
+                    if (markerElement) {
+                        markerElement.classList.add('mapping-marker-highlight');
+                    }
                 });
+                return marker;
             },
             styleOptions: {
                 defaultPolyStyle: {
