@@ -65,6 +65,47 @@ class DefaultViewFieldset extends Fieldset
                 'class' => 'scroll-wheel-zoom',
             ],
         ]);
+        $this->add([
+            'type' => 'number',
+            'name' => 'o:block[__blockIndex__][o:data][default_zoom]',
+            'options' => [
+                'label' => 'Default zoom level', // @translate
+                'info' => 'Optionally set a default zoom level for the initial map view.', // @translate
+            ],
+            'attributes' => [
+                'class' => 'default-zoom',
+                'min' => '0',
+                'step' => '1',
+            ],
+        ]);
+        $this->add([
+            'type' => 'number',
+            'name' => 'o:block[__blockIndex__][o:data][default_latitude]',
+            'options' => [
+                'label' => 'Default focal point latitude', // @translate
+                'info' => 'Optionally set the latitude for the initial map focal point.', // @translate
+            ],
+            'attributes' => [
+                'class' => 'default-latitude',
+                'min' => '-90',
+                'max' => '90',
+                'step' => 'any',
+            ],
+        ]);
+        $this->add([
+            'type' => 'number',
+            'name' => 'o:block[__blockIndex__][o:data][default_longitude]',
+            'options' => [
+                'label' => 'Default focal point longitude', // @translate
+                'info' => 'Optionally set the longitude for the initial map focal point.', // @translate
+            ],
+            'attributes' => [
+                'class' => 'default-longitude',
+                'min' => '-180',
+                'max' => '180',
+                'step' => 'any',
+            ],
+        ]);
     }
 
     public function filterBlockData(array $rawData)
@@ -74,6 +115,9 @@ class DefaultViewFieldset extends Fieldset
             'min_zoom' => null,
             'max_zoom' => null,
             'scroll_wheel_zoom' => '',
+            'default_zoom' => null,
+            'default_latitude' => null,
+            'default_longitude' => null,
             'bounds' => null,
         ];
 
@@ -88,6 +132,25 @@ class DefaultViewFieldset extends Fieldset
         }
         if (isset($rawData['scroll_wheel_zoom'])) {
             $data['scroll_wheel_zoom'] = $rawData['scroll_wheel_zoom'];
+        }
+        if (isset($rawData['default_zoom']) && is_numeric($rawData['default_zoom'])) {
+            $data['default_zoom'] = $rawData['default_zoom'];
+        }
+        if (
+            isset($rawData['default_latitude'])
+            && is_numeric($rawData['default_latitude'])
+            && $rawData['default_latitude'] >= -90
+            && $rawData['default_latitude'] <= 90
+        ) {
+            $data['default_latitude'] = $rawData['default_latitude'];
+        }
+        if (
+            isset($rawData['default_longitude'])
+            && is_numeric($rawData['default_longitude'])
+            && $rawData['default_longitude'] >= -180
+            && $rawData['default_longitude'] <= 180
+        ) {
+            $data['default_longitude'] = $rawData['default_longitude'];
         }
         if (isset($rawData['bounds']) && 4 === count(array_filter(explode(',', $rawData['bounds']), 'is_numeric'))) {
             $data['bounds'] = $rawData['bounds'];

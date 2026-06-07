@@ -9,6 +9,9 @@ var setMap = function(block) {
     var mapDiv = block.find('.mapping-map');
     var basemapProviderSelect = block.find('select.basemap-provider');
     var currentZoomLevelSpan = block.find('span.current-zoom');
+    var defaultZoomInput = block.find('input.default-zoom');
+    var defaultLatitudeInput = block.find('input.default-latitude');
+    var defaultLongitudeInput = block.find('input.default-longitude');
 
     var map = L.map(mapDiv[0], {
         fullscreenControl: true,
@@ -22,6 +25,22 @@ var setMap = function(block) {
         var northEast = [bounds[3], bounds[2]];
         defaultBounds = [southWest, northEast];
     }
+    var defaultZoom = defaultZoomInput.val();
+    var defaultLatitude = defaultLatitudeInput.val();
+    var defaultLongitude = defaultLongitudeInput.val();
+
+    var hasDefaultCenter = defaultLatitude !== '' && defaultLongitude !== '' && defaultZoom !== '';
+
+    var applyDefaultView = function() {
+        map.invalidateSize();
+        if (hasDefaultCenter) {
+            map.setView([defaultLatitude, defaultLongitude], defaultZoom);
+        } else if (defaultBounds) {
+            map.fitBounds(defaultBounds);
+        } else {
+            map.setView([20, 0], 2);
+        }
+    };
 
     var layer;
     try {
@@ -34,24 +53,36 @@ var setMap = function(block) {
     map.addControl(new L.Control.DefaultView(
         function(e) {
             defaultBounds = map.getBounds();
+            defaultZoom = map.getZoom();
+            defaultLatitude = map.getCenter().lat;
+            defaultLongitude = map.getCenter().lng;
+            hasDefaultCenter = true;
             mapDiv.find('input[name$="[bounds]"]').val(defaultBounds.toBBoxString());
+            defaultZoomInput.val(defaultZoom);
+            defaultLatitudeInput.val(defaultLatitude);
+            defaultLongitudeInput.val(defaultLongitude);
         },
         function(e) {
-            map.invalidateSize();
-            map.fitBounds(defaultBounds);
+            applyDefaultView();
         },
         function(e) {
             defaultBounds = null;
+            defaultZoom = '';
+            defaultLatitude = '';
+            defaultLongitude = '';
+            hasDefaultCenter = false;
             mapDiv.find('input[name$="[bounds]"]').val('');
+            defaultZoomInput.val('');
+            defaultLatitudeInput.val('');
+            defaultLongitudeInput.val('');
             map.setView([20, 0], 2);
         },
-        {noInitialDefaultView: !defaultBounds}
+        {noInitialDefaultView: !(defaultBounds || hasDefaultCenter)}
     ));
 
     // Expanding changes map dimensions, so make the necessary adjustments.
     block.on('o:expanded', '.mapping-map-expander', function(e) {
-        map.invalidateSize();
-        defaultBounds ? map.fitBounds(defaultBounds) : map.setView([20, 0], 2);
+        applyDefaultView();
     })
 
     basemapProviderSelect.on('change', function(e) {
@@ -67,6 +98,9 @@ var setMap = function(block) {
     map.on('zoom', function(e) {
         currentZoomLevelSpan.text(this.getZoom());
     });
+
+    applyDefaultView();
+    currentZoomLevelSpan.text(map.getZoom());
 };
 
 // Initialize the overlay container.

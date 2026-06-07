@@ -29,6 +29,9 @@ class BlockLayoutMapGroupsForm extends Form
                 'o:block[__blockIndex__][o:data][min_zoom]' => $data['min_zoom'],
                 'o:block[__blockIndex__][o:data][max_zoom]' => $data['max_zoom'],
                 'o:block[__blockIndex__][o:data][scroll_wheel_zoom]' => $data['scroll_wheel_zoom'],
+                'o:block[__blockIndex__][o:data][default_zoom]' => $data['default_zoom'],
+                'o:block[__blockIndex__][o:data][default_latitude]' => $data['default_latitude'],
+                'o:block[__blockIndex__][o:data][default_longitude]' => $data['default_longitude'],
             ],
             'groups' => [
                 'o:block[__blockIndex__][o:data][groups][type]' => $data['groups']['type'],

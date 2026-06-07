@@ -196,7 +196,19 @@ function MappingBlock(mapDiv, timelineDiv) {
 
     // Set the default view.
     const setDefaultView = function() {
-        if (mapData['bounds']) {
+        if (
+            mapData['default_latitude'] !== null
+            && mapData['default_latitude'] !== ''
+            && mapData['default_longitude'] !== null
+            && mapData['default_longitude'] !== ''
+            && mapData['default_zoom'] !== null
+            && mapData['default_zoom'] !== ''
+        ) {
+            map.setView(
+                [mapData['default_latitude'], mapData['default_longitude']],
+                mapData['default_zoom']
+            );
+        } else if (mapData['bounds']) {
             const bounds = mapData['bounds'].split(',');
             const southWest = [bounds[1], bounds[0]];
             const northEast = [bounds[3], bounds[2]];
