@@ -17,12 +17,18 @@ $this->headScript()->appendFile($this->assetUrl('js/mapping-browse.js', 'Mapping
 $this->headScript()->appendFile($this->assetUrl('js/advanced-search.js', 'Omeka'));
 
 $query['mapping_basemap_provider'] = $query['mapping_basemap_provider'] ?? '';
+$query['mapping_default_zoom'] = $query['mapping_default_zoom'] ?? '';
+$query['mapping_default_latitude'] = $query['mapping_default_latitude'] ?? '';
+$query['mapping_default_longitude'] = $query['mapping_default_longitude'] ?? '';
 ?>
 <?php echo $this->pageTitle($this->translate('Map'), 2); ?>
 
 <div id="mapping-map" style="height:700px; width: 80%; margin:0 auto;"
     data-disable-clustering="<?php echo $this->siteSetting('mapping_disable_clustering') ? '1' : '0'; ?>"
     data-basemap-provider="<?php echo $this->escapeHtml($this->siteSetting('mapping_basemap_provider')); ?>"
+    data-default-zoom="<?php echo $this->escapeHtml($query['mapping_default_zoom']); ?>"
+    data-default-latitude="<?php echo $this->escapeHtml($query['mapping_default_latitude']); ?>"
+    data-default-longitude="<?php echo $this->escapeHtml($query['mapping_default_longitude']); ?>"
     data-features-url="<?php echo $this->escapeHtml($this->url('site/mapping', ['controller' => 'index', 'action' => 'get-features'], true)); ?>"
     data-feature-popup-content-url="<?php echo $this->escapeHtml($this->url('site/mapping', ['controller' => 'index', 'action' => 'get-feature-popup-content'], true)); ?>"
     data-items-query="<?php echo $this->escapeHtml(json_encode($itemsQuery)); ?>"
@@ -33,4 +39,7 @@ $query['mapping_basemap_provider'] = $query['mapping_basemap_provider'] ?? '';
     <?php echo $this->partial('common/advanced-search', ['query' => $query, 'resourceType' => 'item']); ?>
     <button type="submit"><?php echo $this->translate('Search Map'); ?></button>
     <input type="hidden" name="mapping_basemap_provider" value="<?php echo $this->escapeHtml($query['mapping_basemap_provider']); ?>">
+    <input type="hidden" name="mapping_default_zoom" value="<?php echo $this->escapeHtml($query['mapping_default_zoom']); ?>">
+    <input type="hidden" name="mapping_default_latitude" value="<?php echo $this->escapeHtml($query['mapping_default_latitude']); ?>">
+    <input type="hidden" name="mapping_default_longitude" value="<?php echo $this->escapeHtml($query['mapping_default_longitude']); ?>">
 </form>

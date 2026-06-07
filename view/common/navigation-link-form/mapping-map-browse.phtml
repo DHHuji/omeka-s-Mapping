@@ -10,7 +10,13 @@ $basemapProviderSelect = (new Element\Select('basemap_provider'))
     ->setValueOptions(Module::BASEMAP_PROVIDERS)
     ->setEmptyOption('[Default provider]') // @translate
     ->setAttribute('data-name', 'basemap_provider');
+$defaultZoom = isset($data['default_zoom']) && '' !== (string) $data['default_zoom'] ? $data['default_zoom'] : null;
+$defaultLatitude = isset($data['default_latitude']) && '' !== (string) $data['default_latitude'] ? $data['default_latitude'] : null;
+$defaultLongitude = isset($data['default_longitude']) && '' !== (string) $data['default_longitude'] ? $data['default_longitude'] : null;
 ?>
 <label><?php echo $this->translate('Type'); ?> <input type="text" value="<?php echo $escape($this->translate($link->getName())); ?>" disabled></label>
 <label><?php echo $this->translate('Label'); ?> <input type="text" data-name="label" value="<?php echo $escape($label); ?>"></label>
 <label><?php echo $this->translate('Basemap provider'); ?> <?php echo $this->formSelect($basemapProviderSelect); ?></label>
+<label><?php echo $this->translate('Default zoom level'); ?> <input type="number" min="0" step="1" data-name="default_zoom" value="<?php echo $escape($defaultZoom); ?>"></label>
+<label><?php echo $this->translate('Default focal point latitude'); ?> <input type="number" min="-90" max="90" step="any" data-name="default_latitude" value="<?php echo $escape($defaultLatitude); ?>"></label>
+<label><?php echo $this->translate('Default focal point longitude'); ?> <input type="number" min="-180" max="180" step="any" data-name="default_longitude" value="<?php echo $escape($defaultLongitude); ?>"></label>
