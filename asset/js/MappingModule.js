@@ -125,6 +125,14 @@ const MappingModule = {
                         onEachFeature: function(feature, layer) {
                             const popup = L.popup();
                             layer.bindPopup(popup);
+                            if (options.autoOpenPopup && !options._popupOpened) {
+                                layer.on('add', function() {
+                                    if (!options._popupOpened) {
+                                        options._popupOpened = true;
+                                        layer.openPopup();
+                                    }
+                                });
+                            }
                             if (getFeaturePopupContentUrl) {
                                 layer.on('popupopen', function() {
                                     $.get(getFeaturePopupContentUrl, {feature_id: featureId}, function(popupContent) {

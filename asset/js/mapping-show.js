@@ -111,6 +111,7 @@ if (queryItemsQuery && highlightResourceId) {
                     color: '#f97066',
                 },
             },
+            autoOpenPopup: true,
         }
     );
 } else {
